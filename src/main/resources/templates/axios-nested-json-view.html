@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>form 입력</title>
+</head>
+<body>
+<form>
+    이름 : <input type="text" id="name" name="name">
+    이메일 : <input type="text" id="email" name="email">
+    <div id="grades">
+        <p>성적정보</p>
+        <div class="grade">
+            수업명 : <input type="text" class="subjects" name="subject"> <br>
+            점수 : <input type="text" class="points" name="point">
+        </div>
+        <div class="grade">
+            수업명 : <input type="text" class="subjects" name="subject"> <br>
+            점수 : <input type="text" class="points" name="point">
+        </div>
+    </div>
+    <button type="button" onclick="postData()">제출</button>
+</form>
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+<script>
+    async function postData(){
+        const name = document.getElementById("name").value;
+        const email = document.getElementById("email").value;
+        let scores = [];
+        const grades = document.getElementsByClassName('grade');
+        for(let i=0; i<grades.length; i++){
+            const subject = document.getElementsByClassName('subjects')[i].value;
+            const point = document.getElementsByClassName('points')[i].value;
+            const grade = {subject, point};
+            scores.push(grade);
+        }
+        const serverData = {name, email, scores};
+        const result = await axios.post("http://localhost:8080/hello/axios-nested-json-view", serverData);
+        alert("제출이 완료되었습니다.");
+    }
+</script>
+</body>
+</html>

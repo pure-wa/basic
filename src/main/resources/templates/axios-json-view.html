@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <title>form 입력</title>
+</head>
+<body>
+<form>
+    이름 : <input type="text" name="name" id="name">
+    이메일 : <input type="text" name="email" id="email">
+    <button type="button" onclick="serverData()">제출</button>
+</form>
+<script>
+    async function serverData() {
+        const name = document.getElementById("name").value;
+        const email = document.getElementById("email").value;
+        const serverData = {name, email};
+        const result = await axios.post("http://localhost:8080/hello/axios-json-view", serverData);
+        console.log(result);
+        alert("성공적으로 가입되었습니다.");
+    }
+</script>
+</body>
+</html>

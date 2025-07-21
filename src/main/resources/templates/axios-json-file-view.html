@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>form 입력</title>
+</head>
+<body>
+<form>
+    이름 : <input type="text" id="name" name="name">
+    이메일 : <input type="text" id="email" name="email">
+    증명사진 : <input type="file" id="photo"  name="photo" accept="image/*">
+    <button type="button" onclick="postData()">제출</button>
+</form>
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+<script>
+    async function postData(){
+        const name = document.getElementById("name").value;
+        const email = document.getElementById("email").value;
+        const hello = {name, email};
+        const helloJson = JSON.stringify(hello);
+        const fileInput = document.getElementById('photo');
+        const file = fileInput.files[0];
+        const serverData = new FormData();
+<!--            서버에서 RequestParam으로 받을때 -->
+<!--            serverData.append('hello', helloJson);-->
+<!--            serverData.append('photo', file);-->
+
+<!--            서버에서 RequestPart로 받을때 -->
+<!--            hello변수를 그냥 append할경우에 json형식으로 인식되지 않고, 일반문자열로 append-->
+<!--            js에서 Blob함수는 데이터형을 지정/변환할 때 사용-->
+        serverData.append('hello', new Blob([helloJson], {type:"application/json"}));
+        serverData.append('photo', file);
+        const result = await axios.post("http://localhost:8080/hello/axios-json-file-view", serverData);
+        console.log(result.data);
+    }
+</script>
+</body>
+</html>

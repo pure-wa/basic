@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <title>form 입력</title>
+</head>
+<body>
+<form>
+    이름 : <input type="text" name="name" id="name">
+    이메일 : <input type="text" name="email" id="email">
+    증명사진 : <input type="file" name="photo" id="photo">
+    <button type="button" onclick="serverData()">제출</button>
+</form>
+<script>
+    async function serverData() {
+        const name = document.getElementById("name").value;
+        const email = document.getElementById("email").value;
+        const fileInput = document.getElementById('photo');
+        const file = fileInput.files[0]; // .files[0] 로 파일 꺼내기 (여러 개의 파일이면 for문으로 꺼내기)
+        const serverData = new FormData();
+        serverData.append('name', name);
+        serverData.append('email', email);
+        serverData.append('photo', file);
+        const result = await axios.post("http://localhost:8080/hello/form-file-view", serverData);
+        alert("성공적으로 가입되었습니다.");
+    }
+</script>
+</body>
+</html>
