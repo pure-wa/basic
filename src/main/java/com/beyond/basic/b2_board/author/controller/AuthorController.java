@@ -1,11 +1,14 @@
 package com.beyond.basic.b2_board.author.controller;
 
+import com.beyond.basic.b2_board.author.domain.Author;
 import com.beyond.basic.b2_board.author.service.AuthorService;
 import com.beyond.basic.b2_board.author.dto.*;
+import com.beyond.basic.b2_board.common.JwtTokenProvider;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -16,6 +19,7 @@ import java.util.NoSuchElementException;
 @RequestMapping("/author")
 public class AuthorController {
     private final AuthorService authorService;
+    private final JwtTokenProvider jwtTokenProvider;
 
     // 회원가입
     @PostMapping("/create")
@@ -34,8 +38,21 @@ public class AuthorController {
         return new ResponseEntity<>("ok", HttpStatus.CREATED);
     }
 
+    // 로그인 (/author/doLogin)
+    @PostMapping("/doLogin")
+    public ResponseEntity<?> doLogin(@Valid @RequestBody AuthorLoginDto dto) {
+        Author author = authorService.doLogin(dto);
+
+        // 토큰 생성 및 return
+        String token = jwtTokenProvider.createAtToken(author);
+
+        return new ResponseEntity<>(new CommonDto(token, HttpStatus.OK.value(), "로그인 성공"), HttpStatus.OK);
+    }
+
     // 회원 목록 조회 (/list)
     @GetMapping("/list")
+    @PreAuthorize("hasRole('ADMIN')")
+//    @PreAuthorize("hasRole('ADMIN') or hasRole('SELLER')") // 2명 권한
     public List<AuthorListDto> listAuthors() {
         List<AuthorListDto> authorListDto = this.authorService.findAll();
         System.out.println(authorListDto);
@@ -45,6 +62,8 @@ public class AuthorController {
     // 회원 상세 조회 : id로 조회 (/detail/1)
     // 서버에서 별도의 try catch를 하지 않으면, 에러 발생 시 500에러 + 스프링의 포맷으로 에러 리턴.
     @GetMapping("/detail/{inputId}")
+    // ADMIN 권한이 있는 지를 autentication 객체에서 쉽게 확인
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> findById(@PathVariable Long inputId) { // AuthorDetailDto
 //        AuthorDetailDto authorDetailDto = null;
 //        try {

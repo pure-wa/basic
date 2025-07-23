@@ -32,4 +32,14 @@ public class AuthorCreateDto {
                 .role(this.role)
                 .build();
     }
+
+    // 암호화된 패스워드를 받는 오버로드 메서드
+    public Author authorToEntity(String encodedPassword) {
+        return Author.builder()
+                .email(this.email)
+                .name(this.name)
+                .password(encodedPassword)
+                .role(Role.USER)
+                .build();
+    }
 }

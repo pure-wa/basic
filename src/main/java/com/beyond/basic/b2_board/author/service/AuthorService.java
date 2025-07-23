@@ -1,14 +1,12 @@
 package com.beyond.basic.b2_board.author.service;
 
+import com.beyond.basic.b2_board.author.dto.*;
 import com.beyond.basic.b2_board.author.repository.AuthorRepository;
 import com.beyond.basic.b2_board.author.domain.Author;
-import com.beyond.basic.b2_board.author.dto.AuthorCreateDto;
-import com.beyond.basic.b2_board.author.dto.AuthorDetailDto;
-import com.beyond.basic.b2_board.author.dto.AuthorListDto;
-import com.beyond.basic.b2_board.author.dto.AuthorUpdatePwDto;
 import com.beyond.basic.b2_board.post.domain.Post;
 import com.beyond.basic.b2_board.post.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,7 +16,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service // Component로도 대체 가능 (트랜잭션 처리가 없는 경우에만)
-@Transactional // 스프링에서 메서드 단위로 트랜잭션 처리를 하고, 만약 예외(unchecked) 발생 시 자동으로 롤백 처리 지원
+@Transactional // 스프링에서 메서드 단위로 트랜잭션 처리(commit)를 하고, 만약 예외(unchecked) 발생 시 자동으로 롤백 처리 지원
 @RequiredArgsConstructor
 public class AuthorService {
 
@@ -43,6 +41,7 @@ public class AuthorService {
     // 다형성 설계는 불가능
     private final AuthorRepository authorRepository;
     private final PostRepository postRepository;
+    private final PasswordEncoder passwordEncoder;
 
 
 
@@ -61,25 +60,41 @@ public class AuthorService {
 //        Author author = new Author(authorCreateDto.getName(), authorCreateDto.getEmail(),
 //                authorCreateDto.getPassword());
         // authorToEntity()를 통해 한 번에 변환
-        Author author = authorCreateDto.authorToEntity();
-        this.authorRepository.save(author);
+
+        String encodePassword = passwordEncoder.encode(authorCreateDto.getPassword()); // 암호화된 password
+
+        Author author = authorCreateDto.authorToEntity(encodePassword);
 
 
-
-//        cascading 테스트 : 회원이 생성될때, 곧바로 "가입인사"글을 생성하는 상황
-//        방법2가지
-//        방법1. 직접 POST객체 생성 후 저장
+        // cascading 테스트 : 회원이 생성될 때, 곧바로 "가입인사" 글을 생성하는 상황
+        // 방법 2가지
+        // 방법1. 직접 Post객체 생성 후 저장
         Post post = Post.builder()
                 .title("안녕하세요")
-                .contents(authorCreateDto.getName()+"입니다. 반갑습니다.")
-//                author 객체가 db에 save되는 순간 엔티티매니저와 영속성컨텍스트에 의해 author 객체에도 id값 생성
+                .contents(authorCreateDto.getName() + "입니다. 반갑습니다.")
+                .delYn("N")
+                // author객체가 DB에 save되는 순간 엔티티매니저에 영속성컨텍스트 의해 author객체에도 id값 생성
                 .author(author)
                 .build();
-//        postRepository.save(post);
-//        방법2. cascade옵션 활용
-        author.getPostList().add(post);
 
+//        postRepository.save(post);
+        // 방법2. cascade옵션 활용
+        author.getPostList().add(post);
+        this.authorRepository.save(author);
     }
+
+    public Author doLogin(AuthorLoginDto dto) {
+
+        // 강사님은 check true로 두고 아래 둘 중 하나라도 false이면 "이메일 또는 비밀번호가 잘못되었습니다." 로 예외 던지기
+        Author author = this.authorRepository.findByEmail(dto.getEmail()).orElseThrow(() -> new NoSuchElementException("없는 회원입니다."));
+
+        // 비밀번호 일치여부 검증 코드
+        boolean check = passwordEncoder.matches(dto.getPassword(), author.getPassword());
+        if(!check) throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
+
+        return author;
+    }
+
 
     public List<AuthorListDto> findAll() {
 //        List<AuthorListDto> authorListDto = new ArrayList<>();
