@@ -5,6 +5,7 @@ import com.beyond.basic.b2_board.author.repository.AuthorRepository;
 import com.beyond.basic.b2_board.author.domain.Author;
 import com.beyond.basic.b2_board.post.domain.Post;
 import com.beyond.basic.b2_board.post.repository.PostRepository;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -143,4 +144,13 @@ public class AuthorService {
         Author author = this.authorRepository.findById(id).orElseThrow(() -> new NoSuchElementException("없는 회원입니다."));
         this.authorRepository.delete(author);
     }
+//    내정보찾기
+    public AuthorDetailDto getMyInfo(String email) {
+        Author author = authorRepository.findByEmail(email)
+                .orElseThrow(() -> new EntityNotFoundException("사용자를 찾을 수 없습니다."));
+
+        // 기존 AuthorDetailDto.fromEntity() 메서드 재사용
+        return AuthorDetailDto.fromEntity(author);
+    }
+
 }

@@ -28,6 +28,10 @@ public class SecurityConfig {
 //    filter계층에서 filter로직을 커스텀.
 
     private final com.beyond.basic.b2_board.common.JwtTokenFilter jwtTokenFilter;
+    private final com.beyond.basic.b2_board.common.JwtAuthenticationHandler jwtAuthenticationHandler;
+    private final com.beyond.basic.b2_board.common.JwtAuthorizationHandler jwtAuthorizationHandler;
+
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
         return httpSecurity
@@ -42,9 +46,13 @@ public class SecurityConfig {
                 .sessionManagement(s->s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 //                token을 검증하고, token검증을 통해 Authentication객체생성.
                 .addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class)
+                .exceptionHandling(e->
+                        e.authenticationEntryPoint(jwtAuthenticationHandler)//401의 경우
+                         .accessDeniedHandler(jwtAuthorizationHandler) //403의 경우
+                )
 //                예외 api 정책 설정.
 //                authenticated() : 예외를 제외한 모든 요청에 대해서 Authentication객체가 생성되길 요구
-                .authorizeHttpRequests(a->a.requestMatchers("/author/create","/author/doLogin").permitAll().anyRequest().authenticated())
+                .authorizeHttpRequests(a->a.requestMatchers("/author/create","/author/doLogin","/servlet/**").permitAll().anyRequest().authenticated())
                 .build();
     }
 

@@ -9,6 +9,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -63,6 +65,7 @@ public class AuthorController {
     // 서버에서 별도의 try catch를 하지 않으면, 에러 발생 시 500에러 + 스프링의 포맷으로 에러 리턴.
     @GetMapping("/detail/{inputId}")
     // ADMIN 권한이 있는 지를 autentication 객체에서 쉽게 확인
+//   권한이 없을경우 filter계층
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> findById(@PathVariable Long inputId) { // AuthorDetailDto
 //        AuthorDetailDto authorDetailDto = null;
@@ -82,7 +85,15 @@ public class AuthorController {
         return new ResponseEntity<>(new CommonDto(authorDetailDto,
                 HttpStatus.CREATED.value(), "author select successfully!"), HttpStatus.OK);
     }
+    @GetMapping("/myinfo")
+    public ResponseEntity<?> getMyInfo() {
+        // JWT 토큰에서 현재 사용자 정보 추출
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication.getName();
 
+        AuthorDetailDto myInfo = authorService.getMyInfo(email);
+        return new ResponseEntity<>(new CommonDto(myInfo, HttpStatus.OK.value(), "내 정보 조회 성공"), HttpStatus.OK);
+    }
     // 비밀번호 수정 (email, password -> json) (/updatepw)
     // get : 조회, post : 등록, patch : 부분 수정, put : 대체, delete :
     // patch method 사용
