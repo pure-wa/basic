@@ -13,6 +13,7 @@ import lombok.NoArgsConstructor;
 @Builder
 public class PostDetailDto {
     private Long id;
+    private String category;
     private String title;
     private String contents;
     private String authorEmail;
@@ -30,6 +31,7 @@ public class PostDetailDto {
     public static PostDetailDto fromEntity(Post post) {
         return PostDetailDto.builder().id(post.getId())
                 .title(post.getTitle())
+                .category(post.getCategory())
                 .contents(post.getContents())
                 .authorEmail(post.getAuthor().getEmail())
                 .build();

@@ -2,15 +2,21 @@ package com.beyond.basic.b2_board.post.repository;
 
 import com.beyond.basic.b2_board.author.domain.Author;
 import com.beyond.basic.b2_board.post.domain.Post;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Repository
@@ -28,8 +34,11 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     List<Post> findAllFetchJoin();
 
     // 페이징 처리
-    Page<Post> findAll(Pageable pageable);
+    Page<Post> findAll(Specification<Post> specification,Pageable pageable);
     Page<Post> findAllByDelYn(String appointment, String delYn, Pageable pageable);
+
+
+
 //    예약게시물기능 구현 페이징
     @Query("SELECT p FROM Post p WHERE p.delYn = :delYn AND " +
             "(p.appointment = 'N' OR (p.appointment = 'Y' AND p.appointmentTime <= :now)) " +
