@@ -44,6 +44,8 @@ public class Author extends BaseTimeEntity {
     @Builder.Default // 빌더패턴에서 변수 초기화(디폴트 값)시 Builder.Default 어노테이션 필수
     private Role role = Role.USER;
 
+    private String profileImage;
+
     // OneToMany는 선택사항. 또한 default가 lazy
     // mappedBy에는 ManyToOne쪽에 변수명을 문자열로 지정. FK 관리를 반대편(post)쪽에서 한다는 의미 -> 연관 관계의 주인 설정
 //    Cascade : 부모객체의 변화에 따라 자식객체가 같이 변함
@@ -58,6 +60,10 @@ public class Author extends BaseTimeEntity {
 
     public void updatePw(String password) {
         this.password = password;
+    }
+
+    public void updateImageUrl(String profileImage) {
+        this.profileImage = profileImage;
     }
 
 //    public AuthorDetailDto detailfromEntity() {

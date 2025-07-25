@@ -21,6 +21,7 @@ public class AuthorDetailDto {
     private Role role;
     private Integer postCount;
     private LocalDateTime createdTime;
+    private String profileImage;
 
     // 1개의 entity로만 dto가 조립되는 것이 아니기에, dto계층에서 fromEntity를 설계
     public static AuthorDetailDto fromEntity(Author author) {
@@ -31,6 +32,7 @@ public class AuthorDetailDto {
                 .role(author.getRole())
                 .postCount(author.getPostList().size())
                 .createdTime(author.getCreatedTime())
+                .profileImage(author.getProfileImage())
                 .build();
     }
 }

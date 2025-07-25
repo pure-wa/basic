@@ -7,10 +7,16 @@ import com.beyond.basic.b2_board.post.domain.Post;
 import com.beyond.basic.b2_board.post.repository.PostRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+import software.amazon.awssdk.core.sync.RequestBody;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -44,10 +50,29 @@ public class AuthorService {
     private final PostRepository postRepository;
     private final PasswordEncoder passwordEncoder;
 
+    @Value("${cloud.aws.s3.bucket}")
+    private String bucket;
+
+    private final S3Client s3Client;  // S3Client 주입
+
+    public String uploadProfileImage(MultipartFile profileImage, String fileName) throws IOException {
+        // PutObjectRequest 생성
+        PutObjectRequest putObjectRequest = PutObjectRequest.builder()
+                .bucket(bucket)
+                .key(fileName)
+                .contentType(profileImage.getContentType())
+                .build();
+
+        // 🆕 실제 업로드 코드 추가
+        s3Client.putObject(putObjectRequest, RequestBody.fromBytes(profileImage.getBytes()));
+
+        // 🆕 URL 반환
+        return s3Client.utilities().getUrl(a->a.bucket(bucket).key(fileName)).toExternalForm();
+    }
 
 
     // 회원가입 (객체 조립은 서비스 담당)
-    public void save(AuthorCreateDto authorCreateDto) throws IllegalArgumentException {
+    public void save(AuthorCreateDto authorCreateDto, MultipartFile profileImage) throws IllegalArgumentException {
         // 이메일 중복 검증
 //        boolean isValidEmail = this.authorRepository.isValidEmail(authorCreateDto.getEmail());
 //        if(isValidEmail) throw new IllegalArgumentException("중복되는 이메일입니다.");
@@ -55,7 +80,9 @@ public class AuthorService {
         if(isEmpty) throw new IllegalArgumentException("중복되는 이메일입니다.");
 
         // 비밀번호 길이 검증
-        if(authorCreateDto.getPassword().length() < 5) throw new IllegalArgumentException("비밀번호 길이가 짧습니다. (5자 이상)");
+        if (authorCreateDto.getPassword().length() <= 8) {
+            throw new IllegalArgumentException("비밀번호가 너무 짧습니다.");
+        }
 
         // 회원가입 완료
 //        Author author = new Author(authorCreateDto.getName(), authorCreateDto.getEmail(),
@@ -66,22 +93,31 @@ public class AuthorService {
 
         Author author = authorCreateDto.authorToEntity(encodePassword);
 
-
         // cascading 테스트 : 회원이 생성될 때, 곧바로 "가입인사" 글을 생성하는 상황
         // 방법 2가지
         // 방법1. 직접 Post객체 생성 후 저장
-        Post post = Post.builder()
-                .title("안녕하세요")
-                .contents(authorCreateDto.getName() + "입니다. 반갑습니다.")
-                .delYn("N")
-                // author객체가 DB에 save되는 순간 엔티티매니저에 영속성컨텍스트 의해 author객체에도 id값 생성
-                .author(author)
-                .build();
+//        Post post = Post.builder()
+//                .title("안녕하세요")
+//                .contents(authorCreateDto.getName() + "입니다. 반갑습니다.")
+//                .delYn("N")
+//                // author객체가 DB에 save되는 순간 엔티티매니저에 영속성컨텍스트 의해 author객체에도 id값 생성
+//                .author(author)
+//                .build();
 
 //        postRepository.save(post);
-        // 방법2. cascade옵션 활용
-        author.getPostList().add(post);
+//        // 방법2. cascade옵션 활용
+//        author.getPostList().add(post);
         this.authorRepository.save(author);
+
+        // 🆕 uploadProfileImage 메서드 사용
+        String fileName = "user-"+author.getId()+"-profileimage-"+profileImage.getOriginalFilename();
+        try {
+            String imageUrl = uploadProfileImage(profileImage, fileName);
+            author.updateImageUrl(imageUrl);
+        } catch (IOException e) {
+            throw new IllegalArgumentException("이미지 업로드 실패");
+        }
+
     }
 
     public Author doLogin(AuthorLoginDto dto) {
