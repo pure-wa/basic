@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>게시글목록조회</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+
+</head>
+<body>
+    <div th:replace="common/header :: headerFragment"></div>
+    <div class="container">
+        <h3>게시글 목록</h3>
+        <div class="float-end">
+            <a href="/post/create" class="btn btn-primary">글쓰기</a>
+        </div>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>제목</th><th>작성자</th><th>상세보기</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each = "post: ${postList}">
+                    <td th:text="${post.title}"></td>
+                    <td th:text="${post.authorEmail}"></td>
+                    <td><a th:href="@{/post/detail/{id}(id=${post.id})}">상세조회</a></td>
+                </tr>
+            </tbody>
+        </table>
+        <ul class="pagination justify-content-center" th:if="${postList.totalPages > 0}">
+            <li class="page-item" th:each="pageNum : ${#numbers.sequence(0,postList.totalPages-1)}">
+                <a class="page-link" th:href="@{/post/list/(page=${pageNum})}" th:text="${pageNum+1}"></a>
+            </li>
+        </ul>
+    </div>
+</body>
+</html>

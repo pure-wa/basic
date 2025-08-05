@@ -1,4 +1,23 @@
-# spring은 실행 시 무조건 application.yml을 찾음
+#프로젝트 이름 설정 예시
+#spring.application.name=basic
+
+#서버 포트 기본값은 8080입니다
+#server.port=8080
+
+
+server:
+  port: 8080
+
 spring:
-  profiles:
-    active: prod
+  datasource:
+    driver-class-name: org.mariadb.jdbc.Driver
+    url: jdbc:mariadb://localhost:3306/board
+    username: root
+    password: 1234
+  jpa:
+    database: mysql
+    database-platform: org.hibernate.dialect.MariaDBDialect
+    generate-ddl: true
+    hibernate:
+      ddl-auto: update
+    show_sql: true

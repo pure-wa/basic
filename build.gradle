@@ -1,6 +1,6 @@
 plugins {
 	id 'java'
-	id 'org.springframework.boot' version '3.4.7'
+	id 'org.springframework.boot' version '2.7.11'
 	id 'io.spring.dependency-management' version '1.1.7'
 }
 
@@ -9,7 +9,7 @@ version = '0.0.1-SNAPSHOT'
 
 java {
 	toolchain {
-		languageVersion = JavaLanguageVersion.of(17)
+		languageVersion = JavaLanguageVersion.of(11)
 	}
 }
 
@@ -24,43 +24,25 @@ repositories {
 }
 
 dependencies {
-
-	// 아래 의존성은 db 연결 및 관리를 위한 의존성 : jdbc, myBatis, jpa
-	// db 의존성은 바로 db정보를 찾아 연결을 시도하므로, db연결정보 사전설정 필요
-	implementation 'org.springframework.boot:spring-boot-starter-data-jdbc'
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-	implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.4'
 	runtimeOnly 'org.mariadb.jdbc:mariadb-java-client'
 
-	// spring 웹서비스를 위한 기본 의존성
 	implementation 'org.springframework.boot:spring-boot-starter-web'
-
-	// getter, setter 등의 자동생성 및 개발의 편의성을 증대시켜주는 의존성
 	compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok'
 
-	// 테스트 코드 작성을 위한 의존성
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
-	testImplementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter-test:3.0.4'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
-	// 서버에서 화면을 만들어서 렌더링(화면을 준다.라는 의미) 해주기 위한 기술 중 하나
 	implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
-
-	// 값 검증을 위한 의존성
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
-
-//	로그인을 위한 Security 의존성
 	implementation 'org.springframework.boot:spring-boot-starter-security'
+	implementation 'org.thymeleaf.extras:thymeleaf-extras-springsecurity5'
 
-
-//    jwt토큰 관련 라이브러리 추가
-	implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
-	runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
-	runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'  // JSON 처리에 필요
-
-//    파일처리를 위한 aws 의존성 추가
-	implementation 'software.amazon.awssdk:s3:2.17.58'
+//	    redis사용을 위한 의존성 추가 (임시 주석처리)
+	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+//    세션스토리지를 redis에 저장하기 위한 의존성 추가 (임시 주석처리)
+	implementation 'org.springframework.session:spring-session-data-redis'
 }
 
 tasks.named('test') {
